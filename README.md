@@ -6,5 +6,5 @@
 - MongoDB
 
 ### usage
-`docker-compose up -d` and open [http://localhost:8080]
+`docker-compose up -d` and open [http://localhost:8080](http://localhost:8080)
 ![](https://github.com/ganochenkodg/svelte-crud/blob/master/sveltecrud.png)
