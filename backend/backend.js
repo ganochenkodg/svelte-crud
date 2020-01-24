@@ -14,7 +14,17 @@ var BookSchema = mongoose.Schema({
 });
 var Book = mongoose.model('Book', BookSchema);
 
-mongoose.connect('mongodb://mongo/simple-crud')
+const options = {
+  reconnectTries: 5,
+  reconnectInterval: 500,
+  poolSize: 10,
+  bufferMaxEntries: 0,
+  connectTimeoutMS: 60000,
+  socketTimeoutMS: 45000,
+  family: 4
+};
+
+mongoose.connect('mongodb://mongo/simple-crud', options)
   .then(() => console.log('connection succesful'))
   .catch((err) => console.error(err));
 
