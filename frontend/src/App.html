@@ -14,7 +14,7 @@
 	import {
 		onMount
 	} from "svelte";
-	let urlpath = window.location.href;
+
 	var books = [];
 	var addBookForm = {
 		title: '',
@@ -29,14 +29,14 @@
 	};
 
 	function getBooks() {
-		axios.get(`${urlpath}books`)
+		axios.get(`/books`)
 			.then((res) => {
 				books = res.data;
 			});
 	};
 
 	function removeBook(bookID) {
-		const path = `${urlpath}books/${bookID.book._id}`;
+		const path = `/books/${bookID.book._id}`;
 		axios.delete(path)
 			.then(() => {
 				getBooks();
@@ -63,7 +63,7 @@
 			author: addBookForm.author,
 			description: addBookForm.description,
 		};
-		const path = `${urlpath}books`;
+		const path = `/books`;
 		axios.post(path, payload)
 			.then(() => {
 				getBooks();
@@ -86,7 +86,7 @@
 			author: editForm.author,
 			description: editForm.description,
 		};
-		const path = `${urlpath}books/${editForm._id}`;
+		const path = `/books/${editForm._id}`;
 		axios.put(path, payload)
 			.then(() => {
 				getBooks();
