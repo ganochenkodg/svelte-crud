@@ -9,13 +9,14 @@ Simple app with crud operations and DB switcher. At this moment only MongoDB and
 
 ### usage
 `docker-compose up -d` and open [http://localhost:8080](http://localhost:8080)
+
 ![](https://github.com/ganochenkodg/svelte-crud/blob/master/sveltecrud.png)
 
-Plans:
-[x] Working with Mongo
-[x] And PostgreSQL
-[ ] Try cassandra
-[ ] Clickhouse
-[ ] ElasticSearch
-[ ] Make it all asynchronous
-[ ] Some wow effects in UI
+Tasklist:
+- [x] Working with Mongo
+- [x] And PostgreSQL
+- [ ] Try cassandra
+- [ ] Clickhouse
+- [ ] ElasticSearch
+- [ ] Make it all asynchronous
+- [ ] Some wow effects in UI
