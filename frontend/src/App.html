@@ -34,11 +34,15 @@
 	function setMongo() {
 	  mongoactive = true;
 	  postgresactive = false;
+		currentdb = 'mongo';
+		getBooks();
 	};
 
 	function setPostgres() {
 	  mongoactive = false;
 	  postgresactive = true;
+		currentdb = 'postgres';
+		getBooks();
 	};
 
 	function getBooks() {

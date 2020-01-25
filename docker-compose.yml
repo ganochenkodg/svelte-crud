@@ -9,11 +9,23 @@ services:
     build: backend/
     ports:
       - "3000:3000"
+    depends_on:
+      - mongo
+      - postgres      
     links:
       - mongo
+      - postgres
   frontend:
     build: frontend/
     ports:
       - "8080:80"
     links:
       - backend
+  postgres:
+    image: postgres:10-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=node
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=books

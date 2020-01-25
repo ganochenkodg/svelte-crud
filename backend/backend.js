@@ -3,8 +3,27 @@ var router = express.Router();
 var app = express();
 var cors = require('cors');
 var bodyParser = require('body-parser');
-var mongoose = require('mongoose');
 
+const postgres = require('./postgres.js')
+
+async function createTable() {
+  let newTableSql = `CREATE TABLE IF NOT EXISTS books (
+  _id SERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  author VARCHAR(255) NOT NULL,
+  description VARCHAR(255) NOT NULL);
+  TRUNCATE TABLE books;
+  INSERT INTO books(title, author, description) VALUES
+  ('PostgreSQL 11', 'Simon Riggs', 'Administration cookbook')`;
+  await postgres.query(newTableSql, (err, res) => {
+    if (err) console.log("CREATE TABLE ->", err);
+    if (res) console.log("Postgres succesfully migrated");
+  });
+}
+
+createTable();
+
+var mongoose = require('mongoose');
 var BookSchema = mongoose.Schema({
   title: String,
   author: String,
@@ -31,11 +50,11 @@ var mongoMigration = function() {
     "title": "MongoDB Recipes",
     "author": "Subhashini Chellappan",
     "description": "With Data Modeling and Query Building Strategies"
-    }, function (err) {
+  }, function(err) {
     if (err) console.error('Failed to create start book', err);
   });
 }
-mongoose.connection.on('open', function(){
+mongoose.connection.on('open', function() {
   mongoMigration();
 })
 
@@ -51,6 +70,11 @@ router.get('/mongo/', function(req, res, next) {
   });
 });
 
+router.get('/postgres/', async (req, res) => {
+  const { rows } = await postgres.query('SELECT * FROM books;');
+  res.send(rows);
+})
+
 router.get('/mongo/:id', function(req, res, next) {
   Book.findById(req.params.id, function(err, post) {
     if (err) return next(err);
@@ -58,11 +82,22 @@ router.get('/mongo/:id', function(req, res, next) {
   });
 });
 
+router.get('/postgres/:id', async (req, res) => {
+  const { rows } = await postgres.query('SELECT * FROM books WHERE _id = $1;', [req.params.id]);
+  res.send(rows[0]);
+})
+
 router.post('/mongo/', function(req, res, next) {
   Book.create(req.body, function(err, post) {
     if (err) return next(err);
     res.json(post);
   });
+});
+
+router.post('/postgres/', async (req, res) => {
+  const { title, author, description } = req.body;
+  const { rows } = await postgres.query('INSERT INTO books(title, author, description) VALUES($1, $2, $3);', [title, author, description]);
+  res.json(rows);
 });
 
 router.put('/mongo/:id', function(req, res, next) {
@@ -72,11 +107,22 @@ router.put('/mongo/:id', function(req, res, next) {
   });
 });
 
+router.put('/postgres/:id', async (req, res) => {
+  const { title, author, description } = req.body;
+  const { rows } = await postgres.query('UPDATE books SET title = $1, author = $2, description = $3 WHERE _id = $4;', [title, author, description, req.params.id]);
+  res.json(rows);
+});
+
 router.delete('/mongo/:id', function(req, res, next) {
   Book.findByIdAndRemove(req.params.id, req.body, function(err, post) {
     if (err) return next(err);
     res.json(post);
   });
+});
+
+router.delete('/postgres/:id', async (req, res) => {
+  const { rows } = await postgres.query('DELETE FROM books WHERE _id = $1;', [req.params.id]);
+  res.json(rows);
 });
 
 app.listen(3000, function() {
