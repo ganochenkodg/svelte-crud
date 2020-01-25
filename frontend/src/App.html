@@ -2,6 +2,7 @@
 	import axios from 'axios';
 	import {
 		Button,
+		ButtonGroup,
 		Col,
 		Row,
 		Modal,
@@ -27,16 +28,28 @@
 		author: '',
 		description: '',
 	};
+	let mongoactive = true;
+	let postgresactive = false;
+  let currentdb = 'mongo';
+	function setMongo() {
+	  mongoactive = true;
+	  postgresactive = false;
+	};
+
+	function setPostgres() {
+	  mongoactive = false;
+	  postgresactive = true;
+	};
 
 	function getBooks() {
-		axios.get(`/books`)
+		axios.get(`/books/${currentdb}`)
 			.then((res) => {
 				books = res.data;
 			});
 	};
 
 	function removeBook(bookID) {
-		const path = `/books/${bookID.book._id}`;
+		const path = `/books/${currentdb}/${bookID.book._id}`;
 		axios.delete(path)
 			.then(() => {
 				getBooks();
@@ -63,7 +76,7 @@
 			author: addBookForm.author,
 			description: addBookForm.description,
 		};
-		const path = `/books`;
+		const path = `/books/${currentdb}`;
 		axios.post(path, payload)
 			.then(() => {
 				getBooks();
@@ -86,7 +99,7 @@
 			author: editForm.author,
 			description: editForm.description,
 		};
-		const path = `/books/${editForm._id}`;
+		const path = `/books/${currentdb}/${editForm._id}`;
 		axios.put(path, payload)
 			.then(() => {
 				getBooks();
@@ -122,6 +135,12 @@
 			<h1>Books</h1>
 			<hr><br><br>
 			<Button color="success" on:click={addtoggle}>Add Book</Button>
+			<span style="float: right;">
+				<ButtonGroup>
+					<Button color="success" active={mongoactive} outline={postgresactive} on:click={setMongo}>MongoDB</Button>
+					<Button color="primary" active={postgresactive} outline={mongoactive} on:click={setPostgres}>PostgreSQL</Button>
+				</ButtonGroup>
+			</span>
 			<br><br>
 			<table class="table table-hover">
 				<thead>

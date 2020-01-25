@@ -14,54 +14,66 @@ var BookSchema = mongoose.Schema({
 });
 var Book = mongoose.model('Book', BookSchema);
 
-const options = {
-  reconnectTries: 5,
-  reconnectInterval: 500,
-  poolSize: 10,
-  bufferMaxEntries: 0,
-  connectTimeoutMS: 60000,
-  socketTimeoutMS: 45000,
-  family: 4
+var connectWithRetry = function() {
+  return mongoose.connect('mongodb://mongo/simple-crud', function(err) {
+    if (err) {
+      console.error('Failed to connect to mongo on startup - retrying in 5 sec', err);
+      setTimeout(connectWithRetry, 5000);
+    }
+  });
 };
+connectWithRetry();
+console.log('Mongo connection succesful');
 
-mongoose.connect('mongodb://mongo/simple-crud', options)
-  .then(() => console.log('connection succesful'))
-  .catch((err) => console.error(err));
+var mongoMigration = function() {
+  mongoose.connection.db.dropDatabase();
+  Book.create({
+    "title": "MongoDB Recipes",
+    "author": "Subhashini Chellappan",
+    "description": "With Data Modeling and Query Building Strategies"
+    }, function (err) {
+    if (err) console.error('Failed to create start book', err);
+  });
+}
+mongoose.connection.on('open', function(){
+  mongoMigration();
+})
+
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use('/books/',router);
+app.use('/books/', router);
 
-router.get('/', function(req, res, next) {
-  Book.find(function (err, products) {
+router.get('/mongo/', function(req, res, next) {
+  Book.find(function(err, products) {
     if (err) return next(err);
     res.json(products);
   });
 });
 
-router.get('/:id', function(req, res, next) {
-  Book.findById(req.params.id, function (err, post) {
+router.get('/mongo/:id', function(req, res, next) {
+  Book.findById(req.params.id, function(err, post) {
     if (err) return next(err);
     res.json(post);
   });
 });
 
-router.post('/', function(req, res, next) {
-  Book.create(req.body, function (err, post) {
+router.post('/mongo/', function(req, res, next) {
+  Book.create(req.body, function(err, post) {
     if (err) return next(err);
     res.json(post);
   });
 });
 
-router.put('/:id', function(req, res, next) {
-  Book.findByIdAndUpdate(req.params.id, req.body, function (err, post) {
+router.put('/mongo/:id', function(req, res, next) {
+  Book.findByIdAndUpdate(req.params.id, req.body, function(err, post) {
     if (err) return next(err);
     res.json(post);
   });
 });
 
-router.delete('/:id', function(req, res, next) {
-  Book.findByIdAndRemove(req.params.id, req.body, function (err, post) {
+router.delete('/mongo/:id', function(req, res, next) {
+  Book.findByIdAndRemove(req.params.id, req.body, function(err, post) {
     if (err) return next(err);
     res.json(post);
   });
