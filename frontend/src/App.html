@@ -11,7 +11,8 @@
 		ModalFooter,
 		ModalHeader,
 		Input,
-		Label
+		Label,
+		Table
 	} from 'sveltestrap';
 	import {
 		onMount
@@ -140,7 +141,7 @@
 	<div class="row">
 		<div class="col-sm-12">
 			<h1>Books</h1>
-			<hr><br><br>
+			<hr><br>
 			<Button color="success" on:click={addtoggle}>Add Book</Button>
 			<span style="float: right;">
 				<ButtonGroup>
@@ -149,7 +150,7 @@
 				</ButtonGroup>
 			</span>
 			<br><br>
-			<table class="table table-hover">
+			<Table hover>
 				<thead>
 					<tr>
 						<th scope="col">Title</th>
@@ -172,7 +173,7 @@
 				</tr>
 				{/each}
         </tbody>
-      </table>
+      </Table>
     </div>
   </div>
 	<Modal isOpen={addopen} {addtoggle}>
