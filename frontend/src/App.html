@@ -1,5 +1,6 @@
 <script>
 	import axios from 'axios';
+	import { fly } from 'svelte/transition';
 	import {
 		Button,
 		ButtonGroup,
@@ -32,6 +33,7 @@
 	let postgresactive = false;
   let currentdb = 'mongo';
 	function setMongo() {
+		books = [];
 	  mongoactive = true;
 	  postgresactive = false;
 		currentdb = 'mongo';
@@ -39,6 +41,7 @@
 	};
 
 	function setPostgres() {
+		books = [];
 	  mongoactive = false;
 	  postgresactive = true;
 		currentdb = 'postgres';
@@ -157,7 +160,7 @@
 				</thead>
 				<tbody>
 					{#each books as book}
-				<tr>
+				<tr transition:fly="{{ y: 48, duration: 200 }}">
 					<td>{ book.title }</td>
 					<td>{ book.author }</td>
 					<td>{ book.description }</td>
