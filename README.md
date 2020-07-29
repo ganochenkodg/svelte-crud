@@ -3,9 +3,10 @@ Simple app with crud operations and DB switcher. At this moment only MongoDB and
 
 ### description
 - Frontend: Svelte + sveltestrap + nginx
-- Backend: nodejs + express + mongoose
+- Backend: nodejs + express
 - MongoDB
 - Postgres
+- Redis
 
 ### usage
 `docker-compose up -d` and open [http://localhost:8080](http://localhost:8080)
@@ -16,4 +17,4 @@ Tasklist:
 - [x] Working with Mongo
 - [x] And PostgreSQL
 - [ ] ElasticSearch
-- [ ] Redis
+- [x] Redis

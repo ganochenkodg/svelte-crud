@@ -5,16 +5,23 @@ services:
     image: mongo
     ports:
       - "27017:27017"
+  redis:
+    hostname: redis
+    image: redis:6.0.6-alpine
+    ports:
+      - "6379:6379"
   backend:
     build: backend/
     ports:
       - "3000:3000"
     depends_on:
       - mongo
-      - postgres      
+      - postgres
+      - redis
     links:
       - mongo
       - postgres
+      - redis
   frontend:
     build: frontend/
     ports:

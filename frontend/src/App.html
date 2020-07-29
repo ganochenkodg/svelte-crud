@@ -32,11 +32,13 @@
 	};
 	let mongoactive = true;
 	let postgresactive = false;
+	let redisactive = false;
   let currentdb = 'mongo';
 	function setMongo() {
 		books = [];
 	  mongoactive = true;
 	  postgresactive = false;
+		redisactive = false;
 		currentdb = 'mongo';
 		getBooks();
 	};
@@ -45,7 +47,17 @@
 		books = [];
 	  mongoactive = false;
 	  postgresactive = true;
+		redisactive = false;
 		currentdb = 'postgres';
+		getBooks();
+	};
+
+	function setRedis() {
+		books = [];
+	  mongoactive = false;
+	  postgresactive = false;
+		redisactive = true;
+		currentdb = 'redis';
 		getBooks();
 	};
 
@@ -145,8 +157,9 @@
 			<Button color="success" on:click={addtoggle}>Add Book</Button>
 			<span style="float: right;">
 				<ButtonGroup>
-					<Button color="success" active={mongoactive} outline={postgresactive} on:click={setMongo}>MongoDB</Button>
-					<Button color="primary" active={postgresactive} outline={mongoactive} on:click={setPostgres}>PostgreSQL</Button>
+					<Button color="success" active={mongoactive} outline={!mongoactive} on:click={setMongo}>MongoDB</Button>
+					<Button color="primary" active={postgresactive} outline={!postgresactive} on:click={setPostgres}>PostgreSQL</Button>
+					<Button color="danger" active={redisactive} outline={!redisactive} on:click={setRedis}>Redis</Button>
 				</ButtonGroup>
 			</span>
 			<br><br>
