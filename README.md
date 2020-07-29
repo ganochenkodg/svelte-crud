@@ -15,8 +15,5 @@ Simple app with crud operations and DB switcher. At this moment only MongoDB and
 Tasklist:
 - [x] Working with Mongo
 - [x] And PostgreSQL
-- [ ] Try cassandra
-- [ ] Clickhouse
 - [ ] ElasticSearch
-- [ ] Make it all asynchronous
-- [ ] Some wow effects in UI
+- [ ] Redis

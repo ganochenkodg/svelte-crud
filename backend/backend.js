@@ -1,8 +1,10 @@
 var express = require('express');
 var router = express.Router();
 var app = express();
-var cors = require('cors');
 var bodyParser = require('body-parser');
+const cors = require('permissive-cors');
+const process = require('process');
+const GracefulShutdownManager = require('@moebius/http-graceful-shutdown').GracefulShutdownManager;
 
 const postgres = require('./postgres.js')
 
@@ -58,13 +60,12 @@ mongoose.connection.on('open', function() {
   mongoMigration();
 })
 
-
 app.use(cors());
 app.use(bodyParser.json());
 app.use('/books/', router);
 
-router.get('/mongo/', function(req, res, next) {
-  Book.find(function(err, products) {
+router.get('/mongo/', async (req, res, next) => {
+  await Book.find(function(err, products) {
     if (err) return next(err);
     res.json(products);
   });
@@ -73,10 +74,10 @@ router.get('/mongo/', function(req, res, next) {
 router.get('/postgres/', async (req, res) => {
   const { rows } = await postgres.query('SELECT * FROM books;');
   res.send(rows);
-})
+});
 
-router.get('/mongo/:id', function(req, res, next) {
-  Book.findById(req.params.id, function(err, post) {
+router.get('/mongo/:id', async (req, res, next) => {
+  await Book.findById(req.params.id, function(err, post) {
     if (err) return next(err);
     res.json(post);
   });
@@ -85,9 +86,9 @@ router.get('/mongo/:id', function(req, res, next) {
 router.get('/postgres/:id', async (req, res) => {
   const { rows } = await postgres.query('SELECT * FROM books WHERE _id = $1;', [req.params.id]);
   res.send(rows[0]);
-})
+});
 
-router.post('/mongo/', function(req, res, next) {
+router.post('/mongo/', async (req, res, next) => {
   Book.create(req.body, function(err, post) {
     if (err) return next(err);
     res.json(post);
@@ -100,7 +101,7 @@ router.post('/postgres/', async (req, res) => {
   res.json(rows);
 });
 
-router.put('/mongo/:id', function(req, res, next) {
+router.put('/mongo/:id', async (req, res, next) => {
   Book.findByIdAndUpdate(req.params.id, req.body, function(err, post) {
     if (err) return next(err);
     res.json(post);
@@ -113,7 +114,7 @@ router.put('/postgres/:id', async (req, res) => {
   res.json(rows);
 });
 
-router.delete('/mongo/:id', function(req, res, next) {
+router.delete('/mongo/:id', async (req, res, next) => {
   Book.findByIdAndRemove(req.params.id, req.body, function(err, post) {
     if (err) return next(err);
     res.json(post);
@@ -125,6 +126,21 @@ router.delete('/postgres/:id', async (req, res) => {
   res.json(rows);
 });
 
-app.listen(3000, function() {
+const server = app.listen(3000, function() {
   console.log('Books backend running!');
 });
+
+const shutdownManager = new GracefulShutdownManager(server);
+process.on('SIGINT', function onSigint() {
+  app.shutdown();
+});
+
+process.on('SIGTERM', function onSigterm() {
+  app.shutdown();
+});
+
+app.shutdown = function() {
+  shutdownManager.terminate(() => {
+    console.log('Server is gracefully terminated.');
+  });
+};
