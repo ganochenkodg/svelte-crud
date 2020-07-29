@@ -1,15 +1,5 @@
 version: "3"
 services:
-  mongo:
-    hostname: mongo
-    image: mongo
-    ports:
-      - "27017:27017"
-  redis:
-    hostname: redis
-    image: redis:6.0.6-alpine
-    ports:
-      - "6379:6379"
   backend:
     build: backend/
     ports:
@@ -28,6 +18,24 @@ services:
       - "8080:80"
     links:
       - backend
+  mongo:
+    hostname: mongo
+    image: mongo
+    ports:
+      - "27017:27017"
+  redis:
+    hostname: redis
+    image: redis:6.0.6-alpine
+    ports:
+      - "6379:6379"
+  elasticsearch:
+    hostname: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
   postgres:
     image: postgres:10-alpine
     ports:

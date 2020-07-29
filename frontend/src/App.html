@@ -33,12 +33,14 @@
 	let mongoactive = true;
 	let postgresactive = false;
 	let redisactive = false;
+	let esactive = false;
   let currentdb = 'mongo';
 	function setMongo() {
 		books = [];
 	  mongoactive = true;
 	  postgresactive = false;
 		redisactive = false;
+		esactive = false;
 		currentdb = 'mongo';
 		getBooks();
 	};
@@ -48,6 +50,7 @@
 	  mongoactive = false;
 	  postgresactive = true;
 		redisactive = false;
+		esactive = false;
 		currentdb = 'postgres';
 		getBooks();
 	};
@@ -57,7 +60,18 @@
 	  mongoactive = false;
 	  postgresactive = false;
 		redisactive = true;
+		esactive = false;
 		currentdb = 'redis';
+		getBooks();
+	};
+
+	function setEs() {
+		books = [];
+	  mongoactive = false;
+	  postgresactive = false;
+		redisactive = false;
+		esactive = true;
+		currentdb = 'es';
 		getBooks();
 	};
 
@@ -160,6 +174,7 @@
 					<Button color="success" active={mongoactive} outline={!mongoactive} on:click={setMongo}>MongoDB</Button>
 					<Button color="primary" active={postgresactive} outline={!postgresactive} on:click={setPostgres}>PostgreSQL</Button>
 					<Button color="danger" active={redisactive} outline={!redisactive} on:click={setRedis}>Redis</Button>
+					<Button color="primary" active={esactive} outline={!esactive} on:click={setEs}>ElasticSearch</Button>
 				</ButtonGroup>
 			</span>
 			<br><br>

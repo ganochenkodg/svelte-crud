@@ -9,16 +9,47 @@ const GracefulShutdownManager = require('@moebius/http-graceful-shutdown').Grace
 const postgres = require('./postgres.js');
 const redis = require('redis');
 const client = redis.createClient(6379, 'redis');
+const elasticsearch = require('elasticsearch');
+const esclient = new elasticsearch.Client({
+  host: 'elasticsearch:9200',
+  log: 'trace',
+});
+
+esclient.ping({
+  requestTimeout: 30000,
+}, function(error) {
+  if (error) {
+    console.error('es cluster is down!');
+  } else {
+    console.log('Connected to ElasticSearch');
+  }
+});
+
+async function esMigration() {
+  await esclient.index({
+    index: 'books',
+    type: 'book',
+    id: '1',
+    body: {
+      title: 'Elasticsearch: The Definitive Guide',
+      author: 'Clinton Gormley',
+      description: 'A Distributed Real-Time Search and Analytics Engine'
+    },
+    refresh: true
+  });
+}
+
+esMigration();
 
 client.on('connect', () => {
-  console.log('Connected to Redis...')
+  console.log('Connected to Redis')
 })
 
 async function redisMigration() {
   client.hmset(1, [
-    'title', 'test1',
-    'author', 'test2',
-    'description', 'test3'
+    'title', 'The Little Redis Book',
+    'author', 'Karl Seguin',
+    'description', 'The Little Redis Book is a free book introducing Redis.'
   ], (err, reply) => {
     if (err) {
       console.log(err);
@@ -93,6 +124,27 @@ router.get('/mongo/', async (req, res, next) => {
   });
 });
 
+router.get('/es/', async (req, res, next) => {
+  let return_dataset = [];
+  await esclient.search({
+    q: '*'
+  }).then(function(body) {
+    var hits = body.hits.hits;
+    hits.forEach((l) => {
+      temp_data = {
+        '_id': l._id,
+        'title': l._source.title,
+        'author': l._source.author,
+        'description': l._source.description
+      }
+      return_dataset.push(temp_data)
+    });
+    res.json(return_dataset);
+  }, function(error) {
+    console.trace(error.message);
+  });
+});
+
 router.get('/postgres/', async (req, res) => {
   const {
     rows
@@ -101,7 +153,7 @@ router.get('/postgres/', async (req, res) => {
 });
 
 router.get('/redis/', async (req, res) => {
-  let return_dataset = []
+  let return_dataset = [];
   await client.keys('*', (err, id) => {
     let multi = client.multi();
     let keys = Object.keys(id);
@@ -115,7 +167,7 @@ router.get('/redis/', async (req, res) => {
         if (e) {
           console.log(e)
         } else {
-          temp_data = {
+          var temp_data = {
             '_id': id[l],
             'title': o.title,
             'author': o.author,
@@ -138,6 +190,24 @@ router.get('/mongo/:id', async (req, res, next) => {
   });
 });
 
+router.get('/es/:id', async (req, res, next) => {
+  await esclient.get({
+    index: 'books',
+    type: 'book',
+    id: req.params.id
+  }).then(function(body) {
+    var temp_data = {
+      '_id': body._id,
+      'title': body._source.title,
+      'author': body._source.author,
+      'description': body._source.description
+    };
+    res.json(temp_data);
+  }, function(error) {
+    console.trace(error.message);
+  });
+});
+
 router.get('/postgres/:id', async (req, res) => {
   const {
     rows
@@ -156,6 +226,29 @@ router.post('/mongo/', async (req, res, next) => {
   await Book.create(req.body, function(err, post) {
     if (err) return next(err);
     res.json(post);
+  });
+});
+
+router.post('/es/', async (req, res, next) => {
+  const {
+    title,
+    author,
+    description
+  } = req.body;
+  let id = new Date().getTime();
+  await esclient.index({
+    index: 'books',
+    type: 'book',
+    id: id,
+    body: {
+      title: title,
+      author: author,
+      description: description
+    },
+    refresh: true
+  }, function(err, resp, status) {
+    console.log(resp);
+    res.send('Success');
   });
 });
 
@@ -194,6 +287,29 @@ router.put('/mongo/:id', async (req, res, next) => {
   });
 });
 
+router.put('/es/:id', async (req, res, next) => {
+  const {
+    title,
+    author,
+    description
+  } = req.body;
+  await esclient.update({
+    index: 'books',
+    type: 'book',
+    id: req.params.id,
+    body: {
+      doc: {
+        title: title,
+        author: author,
+        description: description
+      }
+    },
+    refresh: true
+  }, function(err, resp, status) {
+    res.send('Success');
+  });
+});
+
 router.put('/postgres/:id', async (req, res) => {
   const {
     title,
@@ -225,6 +341,18 @@ router.delete('/mongo/:id', async (req, res, next) => {
   Book.findByIdAndRemove(req.params.id, req.body, function(err, post) {
     if (err) return next(err);
     res.json(post);
+  });
+});
+
+router.delete('/es/:id', async (req, res, next) => {
+  await esclient.delete({
+    index: 'books',
+    type: 'book',
+    id: req.params.id,
+    refresh: true
+  }, function(err, resp, status) {
+    console.log(resp);
+    res.send('Success');
   });
 });
 
