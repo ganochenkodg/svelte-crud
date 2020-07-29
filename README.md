@@ -1,5 +1,5 @@
 # CRUD app on svelte
-Simple app with crud operations and DB switcher. At this moment only MongoDB and PostgreSQL. Other DBs will come in nearest future...
+Simple app with crud operations and DB switcher. At this moment only MongoDB, Redis and PostgreSQL. Other DBs will come in nearest future...
 
 ### description
 - Frontend: Svelte + sveltestrap + nginx
