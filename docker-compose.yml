@@ -8,10 +8,12 @@ services:
       - mongo
       - postgres
       - redis
+      - elasticsearch
     links:
       - mongo
       - postgres
       - redis
+      - elasticsearch
   frontend:
     build: frontend/
     ports:
