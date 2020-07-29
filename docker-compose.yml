@@ -5,15 +5,15 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - mongo
       - postgres
-      - redis
       - elasticsearch
+      - mongo
+      - redis
     links:
-      - mongo
       - postgres
-      - redis
       - elasticsearch
+      - mongo
+      - redis
   frontend:
     build: frontend/
     ports:

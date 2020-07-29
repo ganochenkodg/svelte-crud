@@ -11,10 +11,15 @@ const redis = require('./redis.js');
 const mongo = require('./mongo.js');
 const es = require('./es.js');
 
-es.esMigration();
-redis.redisMigration();
-postgres.postgresMigration();
+console.log('Start migrations');
 mongo.mongoMigration();
+redis.redisMigration();
+setTimeout(function() {
+  postgres.postgresMigration();
+}, 3000);
+setTimeout(function() {
+  es.esMigration();
+}, 30000);
 
 app.use(cors());
 app.use(bodyParser.json());

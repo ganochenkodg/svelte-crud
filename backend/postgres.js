@@ -1,10 +1,11 @@
-const { Pool } = require('pg')
+const { Pool } = require('pg');
 const pool = new Pool({
   user: "node",
   host: "postgres",
   database: "books",
   password: "password",
-  port: "5432"
+  port: "5432",
+  connectionTimeoutMillis: 5000,
 });
 
 exports.postgresMigration = async function createTable() {
@@ -16,9 +17,11 @@ exports.postgresMigration = async function createTable() {
   TRUNCATE TABLE books;
   INSERT INTO books(title, author, description) VALUES
   ('PostgreSQL 11', 'Simon Riggs', 'Administration cookbook')`;
-  await pool.query(newTableSql, (err, res) => {
-    if (err) console.log("CREATE TABLE ->", err);
-    if (res) console.log("Postgres succesfully migrated");
+  await pool.connect((err, client, release) => {
+    client.query(newTableSql, (err, res) => {
+      if (err) console.log("CREATE TABLE ->", err);
+      if (res) console.log("Postgres succesfully migrated");
+    });
   });
 };
 

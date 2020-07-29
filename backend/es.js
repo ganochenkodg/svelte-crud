@@ -1,10 +1,11 @@
 const elasticsearch = require('elasticsearch');
 const esclient = new elasticsearch.Client({
   host: 'elasticsearch:9200',
-  log: 'trace',
+  maxRetries: 5,
+  requestTimeout: 30000,
 });
 
-exports.esMigration = async function esMigration() {
+exports.esMigration = function esMigration() {
   esclient.ping({
     requestTimeout: 30000,
   }, function(error) {
@@ -14,7 +15,7 @@ exports.esMigration = async function esMigration() {
       console.log('Connected to ElasticSearch');
     }
   });
-  await esclient.index({
+  esclient.index({
     index: 'books',
     type: 'book',
     id: '1',
