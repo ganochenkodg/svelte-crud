@@ -1,8 +1,9 @@
 {
-  "name": "backend",
+  "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "backend.js",
+  "main": "server.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,12 +11,12 @@
   "license": "ISC",
   "dependencies": {
     "@moebius/http-graceful-shutdown": "^1.1.0",
-    "body-parser": "^1.19.0",
-    "elasticsearch": "^16.7.1",
+    "body-parser": "^1.20.2",
+    "elasticsearch": "^16.7.3",
     "express": "^4.17.1",
-    "mongoose": "^5.8.1",
+    "mongoose": "^7.1.0",
     "permissive-cors": "^1.0.0",
-    "pg": "^7.17.1",
-    "redis": "^3.0.2"
+    "pg": "^8.10.0",
+    "redis": "^4.6.6"
   }
 }

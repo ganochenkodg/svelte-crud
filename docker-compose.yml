@@ -1,6 +1,7 @@
 version: "3"
 services:
   backend:
+    env_file: .env
     build: backend/
     ports:
       - "3000:3000"
@@ -15,22 +16,26 @@ services:
       - mongo
       - redis
   frontend:
+    env_file: .env
     build: frontend/
     ports:
       - "8080:80"
     links:
       - backend
   mongo:
+    env_file: .env
     hostname: mongo
     image: mongo
     ports:
       - "27017:27017"
   redis:
+    env_file: .env
     hostname: redis
     image: redis:6.0.6-alpine
     ports:
       - "6379:6379"
   elasticsearch:
+    env_file: .env
     hostname: elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
     ports:
@@ -40,9 +45,10 @@ services:
       - discovery.type=single-node
   postgres:
     image: postgres:10-alpine
+    env_file: .env
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     environment:
-      - POSTGRES_USER=node
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=books
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}

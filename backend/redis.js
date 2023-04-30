@@ -1,94 +1,77 @@
-const redis = require('redis');
-const client = redis.createClient(6379, 'redis');
+import { createClient } from 'redis'
+const client = createClient({
+  socket: {
+      host: 'redis',
+      port: 6379
+  }
+})
+await client.connect()
 
-exports.redisMigration = async function redisMigration() {
+export const redisMigration = async function redisMigration() {
   client.on('connect', () => {
     console.log('Connected to Redis')
   })
-  client.hmset(1, [
-    'title', 'The Little Redis Book',
-    'author', 'Karl Seguin',
-    'description', 'The Little Redis Book is a free book introducing Redis.'
-  ], (err, reply) => {
-    if (err) {
-      console.log(err);
-    }
-    console.log(reply);
-  });
-};
-
-exports.getBooks = async (req, res) => {
-  let return_dataset = [];
-  await client.keys('*', (err, id) => {
-    let multi = client.multi();
-    let keys = Object.keys(id);
-    let i = 0;
-    if (keys.length == 0) {
-      res.send(return_dataset);
-    }
-    keys.forEach((l) => {
-      client.hgetall(id[l], (e, o) => {
-        i++;
-        if (e) {
-          console.log(e)
-        } else {
-          var temp_data = {
-            '_id': id[l],
-            'title': o.title,
-            'author': o.author,
-            'description': o.description
-          }
-          return_dataset.push(temp_data)
-        }
-        if (i == keys.length) {
-          res.send(return_dataset);
-        };
-      });
-    });
-  });
-};
-
-exports.getBookById = async (req, res) => {
-  await client.hgetall(req.params.id, (err, obj) => {
-    obj._id = req.params.id;
-    res.send(obj);
-  });
-};
-
-exports.postBook = async (req, res, next) => {
-  const {
-    title,
-    author,
-    description
-  } = req.body;
-  let id = new Date().getTime();
-  await client.hmset(id, [
-    'title', title,
-    'author', author,
-    'description', description
-  ], (err, reply) => {
-    res.send('Add succesfully');
-  });
-};
-
-exports.updateBook = async (req, res, next) => {
-  const {
-    title,
-    author,
-    description
-  } = req.body;
-  await client.hmset(req.params.id, [
-    'title', title,
-    'author', author,
-    'description', description
-  ], (err, reply) => {
-    res.send('Updated succesfully');
-  });
-};
-
-exports.deleteBook = async (req, res) => {
-  await client.del(req.params.id, (err, reply) => {
-    console.log(reply);
-    res.send('User deleted successfully');
+  
+  await client.hSet('1', {
+    title: 'The Little Redis Book',
+    author: 'Karl Seguin',
+    description: 'The Little Redis Book is a free book introducing Redis.',
   })
-};
+}
+
+export const getBooks = async (req, res) => {
+  const keys = await client.keys('*')
+
+  if (!keys.length) return res.send([])
+
+  const books = await Promise.all(keys.map(async _id => {
+    const obj = await client.hGetAll(_id)
+    return { _id, ...obj }
+  }))
+
+  res.send(books)
+}
+
+export const getBookById = async (req, res) => {
+  const book = await client.hGetAll(req.params.id)
+
+  res.send(book)
+}
+
+export const postBook = async (req, res, next) => {
+  const {
+    title,
+    author,
+    description,
+  } = req.body
+  const id = new Date().getTime()
+  
+  await client.hSet(`${id}`, {
+    title,
+    author,
+    description,
+  })
+
+  res.send('Book added succesfully.')
+}
+
+export const updateBook = async (req, res, next) => {
+  const {
+    title,
+    author,
+    description,
+  } = req.body
+  await client.hSet(`${req.params.id}`, {
+    title,
+    author,
+    description
+  })
+
+  res.send('Updated succesfully')
+}
+
+export const deleteBook = async (req, res) => {
+  await client.del(req.params.id)
+  
+  res.send('Book deleted successfully.')
+}
