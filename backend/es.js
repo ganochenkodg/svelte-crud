@@ -1,20 +1,20 @@
-const elasticsearch = require('elasticsearch');
+import elasticsearch from 'elasticsearch'
 const esclient = new elasticsearch.Client({
   host: 'elasticsearch:9200',
   maxRetries: 5,
   requestTimeout: 30000,
-});
+})
 
-exports.esMigration = function esMigration() {
+export const esMigration = function esMigration() {
   esclient.ping({
     requestTimeout: 30000,
   }, function(error) {
     if (error) {
-      console.error('es cluster is down!');
+      console.error('es cluster is down!')
     } else {
-      console.log('Connected to ElasticSearch');
+      console.log('Connected to ElasticSearch')
     }
-  });
+  })
   esclient.index({
     index: 'books',
     type: 'book',
@@ -25,31 +25,30 @@ exports.esMigration = function esMigration() {
       description: 'A Distributed Real-Time Search and Analytics Engine'
     },
     refresh: true
-  });
-};
+  })
+}
 
-exports.getBooks = async (req, res, next) => {
-  let return_dataset = [];
+export const getBooks = async (req, res, next) => {
+  let return_dataset = []
   await esclient.search({
     q: '*'
   }).then(function(body) {
-    var hits = body.hits.hits;
+    var hits = body.hits.hits
     hits.forEach((l) => {
-      temp_data = {
+      return_dataset.push({
         '_id': l._id,
         'title': l._source.title,
         'author': l._source.author,
         'description': l._source.description
-      }
-      return_dataset.push(temp_data)
-    });
-    res.json(return_dataset);
+      })
+    })
+    res.json(return_dataset)
   }, function(error) {
-    console.trace(error.message);
-  });
-};
+    console.trace(error.message)
+  })
+}
 
-exports.getBookById = async (req, res, next) => {
+export const getBookById = async (req, res, next) => {
   await esclient.get({
     index: 'books',
     type: 'book',
@@ -60,20 +59,20 @@ exports.getBookById = async (req, res, next) => {
       'title': body._source.title,
       'author': body._source.author,
       'description': body._source.description
-    };
-    res.json(temp_data);
+    }
+    res.json(temp_data)
   }, function(error) {
-    console.trace(error.message);
-  });
-};
+    console.trace(error.message)
+  })
+}
 
-exports.postBook = async (req, res, next) => {
+export const postBook = async (req, res, next) => {
   const {
     title,
     author,
     description
-  } = req.body;
-  let id = new Date().getTime();
+  } = req.body
+  let id = new Date().getTime()
   await esclient.index({
     index: 'books',
     type: 'book',
@@ -85,17 +84,17 @@ exports.postBook = async (req, res, next) => {
     },
     refresh: true
   }, function(err, resp, status) {
-    console.log(resp);
-    res.send('Success');
-  });
-};
+    console.log(resp)
+    res.send('Success')
+  })
+}
 
-exports.updateBook = async (req, res, next) => {
+export const updateBook = async (req, res, next) => {
   const {
     title,
     author,
     description
-  } = req.body;
+  } = req.body
   await esclient.update({
     index: 'books',
     type: 'book',
@@ -109,18 +108,18 @@ exports.updateBook = async (req, res, next) => {
     },
     refresh: true
   }, function(err, resp, status) {
-    res.send('Success');
-  });
-};
+    res.send('Success')
+  })
+}
 
-exports.deleteBook = async (req, res, next) => {
+export const deleteBook = async (req, res, next) => {
   await esclient.delete({
     index: 'books',
     type: 'book',
     id: req.params.id,
     refresh: true
   }, function(err, resp, status) {
-    console.log(resp);
-    res.send('Success');
-  });
-};
+    console.log(resp)
+    res.send('Success')
+  })
+}

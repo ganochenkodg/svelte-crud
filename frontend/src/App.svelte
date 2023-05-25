@@ -4,8 +4,6 @@
 	import {
 		Button,
 		ButtonGroup,
-		Col,
-		Row,
 		Modal,
 		ModalBody,
 		ModalFooter,
